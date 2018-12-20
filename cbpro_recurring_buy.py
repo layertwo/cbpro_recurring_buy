@@ -70,7 +70,6 @@ def cbpro_auth(key, secret, passphrase):
     # Auth with CBPro
     try:
         auth_client = cbpro.AuthenticatedClient(key, secret, passphrase)
-        print(auth_client)
     except binascii.Error:
         logging.critical("API secret key is not in proper Base64 format!")
         exit()
