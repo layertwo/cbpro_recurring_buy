@@ -30,7 +30,6 @@ PARSER.add_argument("--cryptocurrency",
 PARSER.add_argument("--funding_method",
                     type=str,
                     help="Payment method to use",
-                    required=True,
                     choices=['ach_bank_account'])
 
 ACTION.add_argument("--deposit",
@@ -57,12 +56,12 @@ CRYPTOCURRENCY_PAIR = ARGS.cryptocurrency
 
 # Setup logging
 if ARGS.debug:
-    logging.basicConfig(format='%(asctime)s %(message)s %(levelname)s:',
+    logging.basicConfig(format='%(asctime)s %(levelname)s: %(message)s',
                         level=logging.DEBUG)
 else:
     logging.basicConfig(
         filename='cbpro_recurring_buy.log',
-        format='%(asctime)s %(message)s %(levelname)s:',
+        format='%(asctime)s %(levelname)s: %(message)s',
         level=logging.INFO)
 
 
@@ -132,10 +131,20 @@ def buy_cryptocurrency(client, cryptocurrency):
                                              funds=str(AMOUNT))
 
     if 'Invalid API Key' in buy_response:
-        logging.critical("API key is invalid!")
+        logging.critical("API key is invalid, please check your credentials!")
+        logging.debug(buy_response)
+        exit()
+    elif 'Insufficient funds' in buy_response:
+        logging.critical("Insufficient funds to make the purchasein your fiat wallet!")
+        logging.debug(buy_response)
         exit()
 
-    trade_id = buy_response['id']
+    try:
+        trade_id = buy_response['id']
+    except KeyError:
+        logging.critical("Unable to get trade ID in returned data, trade failed.")
+        logging.debug(buy_response)
+        exit()
 
     # Sleep to allow time for trade to complete
     sleep(5)
@@ -165,6 +174,9 @@ def buy_cryptocurrency(client, cryptocurrency):
 
 if __name__ == '__main__':
     # Authenticate with Coinbase Pro
+    if ARGS.deposit and not FUNDING_METHOD:
+        PARSER.error("--deposit requires --funding_method")
+
     AUTH_CLIENT = cbpro_auth(API_KEY, API_SECRET, API_PASSPHRASE)
 
     if ARGS.deposit:
