@@ -153,20 +153,20 @@ def buy_cryptocurrency(client, cryptocurrency):
 
     if executed_trade_response['settled'] is True:
         # If trade was successful, gather data and log it
-        fees = executed_trade_response['fill_fees']
-        btc_bought = executed_trade_response['filled_size']
+        fees = float(executed_trade_response['fill_fees'])
+        btc_bought = float(executed_trade_response['filled_size'])
 
-        logging.info("Bought %d of BTC, resulting in %s BTC", ARGS.amount, btc_bought)
-        logging.info("Fees: %s", fees)
+        logging.info("Bought %d %s of BTC, resulting in %.4f BTC", ARGS.amount, FUNDING_CURRENCY, btc_bought)
+        logging.info("Fees: %.4f %s", fees, FUNDING_CURRENCY)
     else:
         # Sleep for longer, should never need to do this unless CBPro is overloaded
         sleep(30)
         executed_trade_response = client.get_order(trade_id)
-        fees = executed_trade_response['fill_fees']
-        btc_bought = executed_trade_response['filled_size']
+        fees = float(executed_trade_response['fill_fees'])
+        btc_bought = float(executed_trade_response['filled_size'])
 
-        logging.info("Bought %d of BTC, resulting in %s BTC", ARGS.amount, btc_bought)
-        logging.info("Fees: %s", fees)
+        logging.info("Bought %d %s of BTC, resulting in %.4f BTC", ARGS.amount, FUNDING_CURRENCY, btc_bought)
+        logging.info("Fees: %.4f %s", fees, FUNDING_CURRENCY)
 
     return executed_trade_response
 
