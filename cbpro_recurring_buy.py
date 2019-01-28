@@ -78,7 +78,7 @@ def deposit_funds(client, account, amount, fiat_currency):
             method_name = method['name']
             method_limit_remaining = method['limits']['deposit'][0]['remaining']['amount']
             break
-     else:
+    else:
         raise RuntimeError("Could not find a payment method matching the selected method")
 
     logging.debug(f"Payment method name: {method_name}")
@@ -135,7 +135,7 @@ def main():
 
     parser = get_parser()
     args = parser.parse_args()
-    get_logger()
+    get_logger(debug=args.debug)
 
     # Authenticate with Coinbase Pro
     client = cbpro_auth(os.environ['API_KEY'], os.environ['API_SECRET'], os.environ['API_PASSPHRASE'])
