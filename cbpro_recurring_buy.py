@@ -72,14 +72,8 @@ def deposit_funds(client, account, amount, fiat_currency):
     """Function to handle depositing funds from a given payment method
     to the Coinbase Pro fiat wallet"""
 
-    # Get Coinbase Pro funding accounts
-    payment_methods = client.get_payment_methods()
-
-    if 'Invalid API Key' in payment_methods:
-        raise RuntimeError("API key is invalid!")
-
     # Search all payment methods for one matching the given type
-    for method in payment_methods:
+    for method in client.get_payment_methods():
         if method['type'] == account:
             method_id = method['id']
             method_name = method['name']
@@ -88,6 +82,7 @@ def deposit_funds(client, account, amount, fiat_currency):
             logging.debug(f"Payment method name: {method_name}")
             logging.debug(f"Payment method ID: {method_id}")
             logging.debug(f"Payment method remaining limit: {float(method_limit_remaining)}")
+            break
 
     # Check that we got a proper payment method
     if not method_id:
@@ -108,7 +103,7 @@ def buy_cryptocurrency(client, cryptocurrency, amount, fiat_currency):
     """Function to handle buying the given cryptocurrency pair
     with the payment method provided in deposit_funds"""
 
-    # Place buy of BTC with above params
+    # Place buy of cryptocurrency with above params
     buy_response = client.place_market_order(product_id=cryptocurrency,
                                              side='buy',
                                              funds=str(amount))
@@ -135,11 +130,8 @@ def buy_cryptocurrency(client, cryptocurrency, amount, fiat_currency):
         executed_trade_response = client.get_order(trade_id)
 
     # If trade was successful, gather data and log it
-    fees = float(executed_trade_response['fill_fees'])
-    btc_bought = float(executed_trade_response['filled_size'])
-
-    logging.info(f"Bought {amount} {fiat_currency} of BTC, resulting in {btc_bought} BTC")
-    logging.info(f"Fees: {fees} {fiat_currency}")
+    logging.info(f"Bought {amount} {fiat_currency} of {cryptocurrency}, resulting in {executed_trade_response['filled_size']} {cryptocurrency}")
+    logging.info(f"Fees: {executed_trade_response['fill_fees']} {fiat_currency}")
 
     return executed_trade_response
 
@@ -151,10 +143,10 @@ def main():
     get_logger()
 
     # Authenticate with Coinbase Pro
+    client = cbpro_auth(os.environ['API_KEY'], os.environ['API_SECRET'], os.environ['API_PASSPHRASE'])
+
     if args.deposit and not args.funding_method:
         parser.error("--deposit requires --funding_method")
-
-    client = cbpro_auth(os.environ['API_KEY'], os.environ['API_SECRET'], os.environ['API_PASSPHRASE'])
 
     if args.deposit:
         deposit_funds(client, args.funding_method, args.amount, args.fiat_currency)
