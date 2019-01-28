@@ -78,15 +78,15 @@ def deposit_funds(client, account, amount, fiat_currency):
             method_id = method['id']
             method_name = method['name']
             method_limit_remaining = method['limits']['deposit'][0]['remaining']['amount']
-
-            logging.debug(f"Payment method name: {method_name}")
-            logging.debug(f"Payment method ID: {method_id}")
-            logging.debug(f"Payment method remaining limit: {float(method_limit_remaining)}")
             break
 
     # Check that we got a proper payment method
     if not method_id:
         raise RuntimeError("Could not find a payment method matching the selected method")
+
+    logging.debug(f"Payment method name: {method_name}")
+    logging.debug(f"Payment method ID: {method_id}")
+    logging.debug(f"Payment method remaining limit: {method_limit_remaining}")
 
     # Deposit with above params
     deposit_response = client.deposit(amount=amount,
