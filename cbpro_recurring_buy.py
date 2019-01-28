@@ -85,9 +85,9 @@ def deposit_funds(client, account, amount, fiat_currency):
             method_name = method['name']
             method_limit_remaining = method['limits']['deposit'][0]['remaining']['amount']
 
-            logging.debug("Payment method name: %s", method_name)
-            logging.debug("Payment method ID: %s", method_id)
-            logging.debug("Payment method remaining limit: %d", float(method_limit_remaining))
+            logging.debug(f"Payment method name: {method_name}")
+            logging.debug(f"Payment method ID: {method_id}")
+            logging.debug(f"Payment method remaining limit: {float(method_limit_remaining)}")
 
     # Check that we got a proper payment method
     if not method_id:
@@ -98,9 +98,8 @@ def deposit_funds(client, account, amount, fiat_currency):
                                       currency=fiat_currency,
                                       payment_method_id=method_id)
 
-    logging.info("Deposited %d %s to Coinbase Pro from Coinbase account %s",
-                 amount, fiat_currency, method_name)
-    logging.info("Deposit will be available at %s", deposit_response['payout_at'])
+    logging.info(f"Deposited {amount} {fiat_currency} to Coinbase Pro from Coinbase account {method_name}")
+    logging.info(f"Deposit will be available at {deposit_response['payout_at']}")
 
     return deposit_response
 
@@ -139,8 +138,8 @@ def buy_cryptocurrency(client, cryptocurrency, amount, fiat_currency):
     fees = float(executed_trade_response['fill_fees'])
     btc_bought = float(executed_trade_response['filled_size'])
 
-    logging.info("Bought %d %s of BTC, resulting in %.4f BTC", amount, fiat_currency, btc_bought)
-    logging.info("Fees: %.4f %s", fees, fiat_currency)
+    logging.info(f"Bought {amount} {fiat_currency} of BTC, resulting in {btc_bought} BTC")
+    logging.info(f"Fees: {fees} {fiat_currency}")
 
     return executed_trade_response
 
