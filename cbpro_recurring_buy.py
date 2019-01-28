@@ -59,13 +59,12 @@ def get_logger(debug=False):
 
 def cbpro_auth(key, secret, passphrase):
     """Function to handle authentication with the Coinbase Pro API"""
-    # Auth with CBPro
+
     try:
-        auth_client = cbpro.AuthenticatedClient(key, secret, passphrase)
+        # Auth with CBPro
+        return cbpro.AuthenticatedClient(key, secret, passphrase)
     except binascii.Error:
         raise RuntimeError("API secret key is not in proper Base64 format!")
-
-    return auth_client
 
 
 def deposit_funds(client, account, amount, fiat_currency):
@@ -74,14 +73,12 @@ def deposit_funds(client, account, amount, fiat_currency):
 
     # Search all payment methods for one matching the given type
     for method in client.get_payment_methods():
-        if method['type'] == account:
+        if method.get('type', None) == account:
             method_id = method['id']
             method_name = method['name']
             method_limit_remaining = method['limits']['deposit'][0]['remaining']['amount']
             break
-
-    # Check that we got a proper payment method
-    if not method_id:
+     else:
         raise RuntimeError("Could not find a payment method matching the selected method")
 
     logging.debug(f"Payment method name: {method_name}")
@@ -113,21 +110,19 @@ def buy_cryptocurrency(client, cryptocurrency, amount, fiat_currency):
     elif 'Insufficient funds' in buy_response:
         raise RuntimeError(f"Insufficient funds to make the purchasein your fiat wallet! Error: {buy_response}")
 
-    trade_id = buy_response.get('id', None)
-
-    if not trade_id:
+    if 'id' not in buy_response:
         raise RuntimeError(f"Unable to get trade ID in returned data, trade failed. Error: {buy_response}")
 
     # Sleep to allow time for trade to complete
     time.sleep(5)
 
     # Check status of trade
-    executed_trade_response = client.get_order(trade_id)
+    executed_trade_response = client.get_order(buy_response.get('id'))
 
     if not executed_trade_response['settled']:
         # Sleep for longer, should never need to do this unless CBPro is overloaded
         time.sleep(30)
-        executed_trade_response = client.get_order(trade_id)
+        executed_trade_response = client.get_order(buy_response.get('id'))
 
     # If trade was successful, gather data and log it
     logging.info(f"Bought {amount} {fiat_currency} of {cryptocurrency}, resulting in {executed_trade_response['filled_size']} {cryptocurrency}")
