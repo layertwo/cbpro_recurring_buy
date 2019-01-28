@@ -47,14 +47,12 @@ def get_logger(debug=False):
 
     # Setup logging
     if debug:
-        logger = logging.basicConfig(format='%(asctime)s %(levelname)s: %(message)s',
+        return logging.basicConfig(format='%(asctime)s %(levelname)s: %(message)s',
                                      level=logging.DEBUG)
     else:
-        logger = logging.basicConfig(filename='cbpro_recurring_buy.log',
+        return logging.basicConfig(filename='cbpro_recurring_buy.log',
                                      format='%(asctime)s %(levelname)s: %(message)s',
                                      level=logging.INFO)
-
-    return logger
 
 
 def cbpro_auth(key, secret, passphrase):
